@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:provider/provider.dart';
 
-import '../models/wifi_network.dart';
+import '../models/wifi_network_model.dart';
 import '../providers/wifi_provider.dart';
 
 class WifiListItem extends StatelessWidget {
-  final WifiNetwork network;
+  final WiFiNetworkModel network;
   final bool isAvailable;
   final bool isConnected;
   final VoidCallback onTap;

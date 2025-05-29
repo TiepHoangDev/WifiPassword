@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../models/wifi_network.dart';
+import '../models/wifi_network_model.dart';
 import '../services/wifi_service.dart';
 import '../services/location_service.dart';
 import '../services/storage_service.dart';
@@ -19,7 +19,7 @@ class WifiProvider extends ChangeNotifier {
   final LocationService locationService;
   final StorageService storageService;
   
-  List<WifiNetwork> _networks = [];
+  List<WiFiNetworkModel> _networks = [];
   List<String> _availableNetworks = [];
   String? _currentSSID;
   WifiLoadingState _loadingState = WifiLoadingState.initial;
@@ -28,8 +28,8 @@ class WifiProvider extends ChangeNotifier {
   StreamSubscription<Position>? _locationSubscription;
   
   // Getters
-  List<WifiNetwork> get networks => _networks;
-  List<WifiNetwork> get availableNetworks => _networks.where(
+  List<WiFiNetworkModel> get networks => _networks;
+  List<WiFiNetworkModel> get availableNetworks => _networks.where(
     (network) => _availableNetworks.contains(network.ssid)
   ).toList();
   WifiLoadingState get loadingState => _loadingState;
@@ -120,7 +120,7 @@ class WifiProvider extends ChangeNotifier {
   }
   
   // Connect to a WiFi network
-  Future<bool> connectToNetwork(WifiNetwork network) async {
+  Future<bool> connectToNetwork(WiFiNetworkModel network) async {
     _isConnecting = true;
     notifyListeners();
     
@@ -166,7 +166,7 @@ class WifiProvider extends ChangeNotifier {
   }
   
   // Share a new WiFi network
-  Future<WifiNetwork?> shareWifiNetwork({
+  Future<WiFiNetworkModel?> shareWifiNetwork({
     required String ssid,
     required String password,
     String? securityType,
@@ -210,7 +210,7 @@ class WifiProvider extends ChangeNotifier {
   }
   
   // Filter networks by search query
-  List<WifiNetwork> searchNetworks(String query) {
+  List<WiFiNetworkModel> searchNetworks(String query) {
     if (query.isEmpty) {
       return _networks;
     }
@@ -221,8 +221,8 @@ class WifiProvider extends ChangeNotifier {
   }
   
   // Get networks sorted by last connection time
-  List<WifiNetwork> getNetworksByLastConnected() {
-    final sortedNetworks = List<WifiNetwork>.from(_networks);
+  List<WiFiNetworkModel> getNetworksByLastConnected() {
+    final sortedNetworks = List<WiFiNetworkModel>.from(_networks);
     
     sortedNetworks.sort((a, b) {
       if (a.lastConnected == null && b.lastConnected == null) {
@@ -249,7 +249,7 @@ class WifiProvider extends ChangeNotifier {
   }
   
   // Get network by ID
-  WifiNetwork? getNetworkById(String id) {
+  WiFiNetworkModel? getNetworkById(String id) {
     try {
       return _networks.firstWhere((network) => network.id == id);
     } catch (e) {
@@ -258,7 +258,7 @@ class WifiProvider extends ChangeNotifier {
   }
   
   // Get network by SSID
-  WifiNetwork? getNetworkBySSID(String ssid) {
+  WiFiNetworkModel? getNetworkBySSID(String ssid) {
     try {
       return _networks.firstWhere((network) => network.ssid == ssid);
     } catch (e) {

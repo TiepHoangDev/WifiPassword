@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
-import '../models/wifi_network.dart';
+import '../models/wifi_network_model.dart';
 import 'storage_service.dart';
 
 class WifiService {
@@ -22,7 +22,7 @@ class WifiService {
   WifiService(this._storageService);
   
   // Get shared WiFi networks from API or mock data
-  Future<List<WifiNetwork>> getSharedWifiNetworks({
+  Future<List<WiFiNetworkModel>> getSharedWifiNetworks({
     double? latitude,
     double? longitude,
     double radius = 1.0, // Default radius in kilometers
@@ -38,7 +38,7 @@ class WifiService {
         
         if (response.statusCode == 200) {
           final List<dynamic> data = json.decode(response.body);
-          return data.map((json) => WifiNetwork.fromJson(json)).toList();
+          return data.map((json) => WiFiNetworkModel.fromJson(json as Map<String, dynamic>)).toList();
         } else {
           throw Exception('Failed to load WiFi networks: ${response.statusCode}');
         }
@@ -51,7 +51,7 @@ class WifiService {
   }
   
   // Generate mock WiFi networks for testing
-  Future<List<WifiNetwork>> _getMockWifiNetworks(double? latitude, double? longitude) async {
+  Future<List<WiFiNetworkModel>> _getMockWifiNetworks(double? latitude, double? longitude) async {
     // Use provided location or default to a random location
     final lat = latitude ?? (37.7749 + (_random.nextDouble() * 0.1 - 0.05));
     final lng = longitude ?? (-122.4194 + (_random.nextDouble() * 0.1 - 0.05));
@@ -78,7 +78,7 @@ class WifiService {
         // Security types
         final securityTypes = ['WPA2', 'WPA', 'WPA/WPA2', 'Open', 'WEP'];
         
-        return WifiNetwork(
+        return WiFiNetworkModel(
           id: _uuid.v4(),
           ssid: 'WiFi_${_getRandomName()}_$index',
           password: _generateRandomPassword(10 + _random.nextInt(6)),
@@ -90,7 +90,7 @@ class WifiService {
           createdBy: 'user_${_random.nextInt(1000)}',
           createdAt: DateTime.now().subtract(Duration(days: _random.nextInt(365))),
           distanceFromUser: latitude != null && longitude != null
-              ? WifiNetwork.calculateDistance(latitude, longitude, networkLat, networkLng)
+              ? WiFiNetworkModel.calculateDistance(latitude, longitude, networkLat, networkLng)
               : null,
         );
       },
@@ -108,7 +108,7 @@ class WifiService {
     // Sort by distance if location is provided
     if (latitude != null && longitude != null) {
       for (final network in allNetworks) {
-        network.distanceFromUser = WifiNetwork.calculateDistance(
+        network.distanceFromUser = WiFiNetworkModel.calculateDistance(
           latitude, longitude, network.latitude, network.longitude);
       }
       
@@ -133,23 +133,23 @@ class WifiService {
       }
       
       // Scan for networks (Android only)
-      final canScan = await WiFiForIoTPlugin.canStartScan();
-      if (!canScan) {
-        debugPrint('Cannot scan for WiFi networks');
+      // Note: We're not using canStartScan() as it's not available in the current API
+      try {
+        // Start scan directly
+        await WiFiForIoTPlugin.forceWifiUsage(true);
+        
+        // Get scan results
+        final scanResults = await WiFiForIoTPlugin.loadWifiList();
+        
+        // Extract SSIDs
+        return scanResults
+            .map((result) => result.ssid ?? '')
+            .where((ssid) => ssid.isNotEmpty)
+            .toList();
+      } catch (e) {
+        debugPrint('Error during WiFi scan: $e');
         return [];
       }
-      
-      // Start scan
-      await WiFiForIoTPlugin.startScan();
-      
-      // Get scan results
-      final scanResults = await WiFiForIoTPlugin.loadWifiList();
-      
-      // Extract SSIDs
-      return scanResults
-          .map((result) => result.ssid ?? '')
-          .where((ssid) => ssid.isNotEmpty)
-          .toList();
     } catch (e) {
       debugPrint('Error scanning for WiFi networks: $e');
       // Return empty list on error
@@ -158,7 +158,7 @@ class WifiService {
   }
   
   // Connect to a WiFi network
-  Future<bool> connectToNetwork(WifiNetwork network) async {
+  Future<bool> connectToNetwork(WiFiNetworkModel network) async {
     try {
       // Check if WiFi is enabled
       if (!(await WiFiForIoTPlugin.isEnabled())) {
@@ -226,7 +226,7 @@ class WifiService {
   }
   
   // Share a new WiFi network
-  Future<WifiNetwork> shareWifiNetwork({
+  Future<WiFiNetworkModel> shareWifiNetwork({
     required String ssid,
     required String password,
     required double latitude,
@@ -234,7 +234,7 @@ class WifiService {
     String? securityType,
   }) async {
     // Create a new network
-    final network = WifiNetwork(
+    final network = WiFiNetworkModel(
       id: _uuid.v4(),
       ssid: ssid,
       password: password,
@@ -281,7 +281,7 @@ class WifiService {
   }
   
   // In a real app, this would send the network to an API
-  Future<void> _sendNetworkToApi(WifiNetwork network) async {
+  Future<void> _sendNetworkToApi(WiFiNetworkModel network) async {
     try {
       final response = await http.post(
         Uri.parse(_mockApiEndpoint),

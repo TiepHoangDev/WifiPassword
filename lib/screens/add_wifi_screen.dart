@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/wifi_provider.dart';
+import '../models/wifi_network_model.dart';
 
 class AddWifiScreen extends StatefulWidget {
   const AddWifiScreen({Key? key}) : super(key: key);

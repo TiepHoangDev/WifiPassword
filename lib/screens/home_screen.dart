@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../providers/wifi_provider.dart';
-import '../models/wifi_network.dart';
+import '../models/wifi_network_model.dart';
 import 'add_wifi_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -149,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         // Filter networks based on search query and availability filter
-        List<WifiNetwork> filteredNetworks = wifiProvider.networks;
+        List<WiFiNetworkModel> filteredNetworks = wifiProvider.networks;
         
         if (_searchQuery.isNotEmpty) {
           filteredNetworks = wifiProvider.searchNetworks(_searchQuery);
@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildNetworkCard(
     BuildContext context,
-    WifiNetwork network,
+    WiFiNetworkModel network,
     bool isAvailable,
     bool isConnected,
   ) {
@@ -438,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showNetworkDetails(WifiNetwork network) {
+  void _showNetworkDetails(WiFiNetworkModel network) {
     final wifiProvider = Provider.of<WifiProvider>(context, listen: false);
     final isAvailable = wifiProvider.isNetworkAvailable(network.ssid);
     final isConnected = wifiProvider.currentSSID == network.ssid;

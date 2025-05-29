@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-// These will be created in subsequent files
-import 'models/wifi_network.dart';
+// Updated imports with the renamed model
+import 'models/wifi_network_model.dart';
 import 'services/wifi_service.dart';
 import 'services/location_service.dart';
 import 'services/storage_service.dart';
