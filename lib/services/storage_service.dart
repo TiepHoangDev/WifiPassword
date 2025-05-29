@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../models/wifi_network.dart';
+import '../models/wifi_network_model.dart';
 
 class StorageService {
   static const String _wifiNetworksKey = 'wifi_networks';
@@ -17,7 +17,7 @@ class StorageService {
   }
   
   // Save a WiFi network to local storage
-  Future<void> saveWifiNetwork(WifiNetwork network) async {
+  Future<void> saveWifiNetwork(WiFiNetworkModel network) async {
     // Get current networks
     final networks = await getWifiNetworks();
     
@@ -43,10 +43,10 @@ class StorageService {
   }
   
   // Get all saved WiFi networks
-  Future<List<WifiNetwork>> getWifiNetworks() async {
+  Future<List<WiFiNetworkModel>> getWifiNetworks() async {
     final networksJson = _prefs.getStringList(_wifiNetworksKey) ?? [];
     
-    final networks = <WifiNetwork>[];
+    final networks = <WiFiNetworkModel>[];
     
     for (final jsonStr in networksJson) {
       try {
@@ -57,7 +57,7 @@ class StorageService {
         final password = await _secureStorage.read(key: _passwordPrefix + id) ?? '';
         
         // Create network object with password
-        final network = WifiNetwork.fromJson({
+        final network = WiFiNetworkModel.fromJson({
           ...networkData,
           'password': password,
         });
@@ -109,7 +109,7 @@ class StorageService {
   }
   
   // Helper method to save the networks list without passwords
-  Future<void> _saveNetworksList(List<WifiNetwork> networks) async {
+  Future<void> _saveNetworksList(List<WiFiNetworkModel> networks) async {
     final networksJson = networks.map((network) {
       final json = network.toJson();
       // Don't store password in SharedPreferences
@@ -125,7 +125,7 @@ class StorageService {
     final networks = await getWifiNetworks();
     final network = networks.firstWhere(
       (n) => n.id == networkId,
-      orElse: () => WifiNetwork(
+      orElse: () => WiFiNetworkModel(
         id: networkId,
         ssid: '',
         password: '',
